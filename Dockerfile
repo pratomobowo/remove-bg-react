@@ -39,34 +39,14 @@ RUN npm ci --omit=dev
 COPY --from=builder /app/server/dist ./server/dist
 COPY --from=builder /app/client/dist ./client/dist
 
-# Create a simple Express middleware to serve static files
-# The built client files will be served by the Node server
-RUN cat > /app/server/dist/serve-static.js << 'EOF'
-const express = require('express');
-const path = require('path');
-
-module.exports = function serveStatic(app) {
-  // Serve client static files
-  app.use(express.static(path.join(__dirname, '../../client/dist')));
-
-  // Fallback to index.html for React Router
-  app.get('*', (req, res) => {
-    // Don't redirect API calls
-    if (!req.path.startsWith('/api')) {
-      res.sendFile(path.join(__dirname, '../../client/dist/index.html'));
-    }
-  });
-};
-EOF
-
 # Expose port
 EXPOSE 3001
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3001/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+  CMD node -e "require('http').get('http://localhost:3001/api/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
 
-# Use dumb-init to handle signals
+# Use dumb-init to handle signals properly
 ENTRYPOINT ["dumb-init", "--"]
 
 # Start server
