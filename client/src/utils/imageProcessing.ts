@@ -1,4 +1,25 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+/**
+ * Get API base URL from environment or construct from current window location
+ * In development: uses http://localhost:3001/api (proxied by Vite)
+ * In production: uses /api (relative path to same domain) or full URL from env
+ */
+const getApiBaseUrl = (): string => {
+  // Check if VITE_API_URL is set in environment
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    return envUrl;
+  }
+
+  // In development, use localhost:3001 (Vite proxy)
+  if (import.meta.env.DEV) {
+    return 'http://localhost:3001/api';
+  }
+
+  // In production, use relative path (same domain)
+  return '/api';
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export interface ProgressInfo {
   key: string;
