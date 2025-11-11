@@ -1,6 +1,6 @@
 # Multi-stage build for Remove Background React App
 # Stage 1: Build client and server
-FROM node:20-alpine AS builder
+FROM node:20 AS builder
 
 WORKDIR /app
 
@@ -22,12 +22,12 @@ COPY server/tsconfig.json ./server/
 RUN npm run build
 
 # Stage 2: Production runtime
-FROM node:20-alpine
+FROM node:20
 
 WORKDIR /app
 
 # Install dumb-init to handle signals properly
-RUN apk add --no-cache dumb-init
+RUN apt-get update && apt-get install -y dumb-init && rm -rf /var/lib/apt/lists/*
 
 # Copy package files from builder
 COPY package*.json ./
