@@ -9,7 +9,7 @@ interface LoadingScreenProps {
   };
 }
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ message, progress }) => {
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ progress }) => {
   const [smoothProgress, setSmoothProgress] = useState(0);
   const targetPercentage = progress
     ? Math.round((progress.current / progress.total) * 100)

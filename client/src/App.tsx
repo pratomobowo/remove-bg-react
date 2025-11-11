@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import DropZone from './components/DropZone';
 import ImagePreview from './components/ImagePreview';
 import ColorSelector from './components/ColorSelector';
