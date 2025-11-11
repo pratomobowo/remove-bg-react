@@ -1,6 +1,6 @@
 # Multi-stage build for Remove Background React App
 # Stage 1: Build client and server
-FROM node:20-alpine as builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,8 @@ RUN npm ci
 # Copy source code
 COPY client ./client
 COPY server ./server
-COPY tsconfig.json ./
+COPY client/tsconfig.json ./client/
+COPY server/tsconfig.json ./server/
 
 # Build client and server
 RUN npm run build
