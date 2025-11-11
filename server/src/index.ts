@@ -17,7 +17,16 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve client static files in production
 const clientDistPath = path.join(__dirname, '../../client/dist');
-app.use(express.static(clientDistPath));
+console.log('Client dist path:', clientDistPath);
+
+// Check if client dist exists before serving static files
+import { existsSync } from 'fs';
+if (existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  console.log('Serving static files from:', clientDistPath);
+} else {
+  console.warn('Client dist directory not found:', clientDistPath);
+}
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -29,7 +38,12 @@ app.use('/api', imageRoutes);
 
 // Fallback to index.html for React Router (SPA)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(clientDistPath, 'index.html'));
+  const indexPath = path.join(clientDistPath, 'index.html');
+  if (existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'Client application not found' });
+  }
 });
 
 // Start server - listen on all interfaces (0.0.0.0) for Docker/container compatibility

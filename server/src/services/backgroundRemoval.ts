@@ -34,10 +34,18 @@ export async function removeImageBackground(
     console.log('Using resources path:', resourcesUri);
     console.log('Processing image blob, size:', imageBlob.size);
 
-    const resultBlob = await removeBackground(imageBlob, {
-      publicPath: resourcesUri,
-      model: 'small', // Use small model for faster processing
+    // Add timeout to prevent hanging
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Background removal timeout')), 30000);
     });
+
+    const resultBlob = await Promise.race([
+      removeBackground(imageBlob, {
+        publicPath: resourcesUri,
+        model: 'small', // Use small model for faster processing
+      }),
+      timeoutPromise
+    ]) as Blob;
 
     const arrayBuffer = await resultBlob.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
@@ -46,7 +54,10 @@ export async function removeImageBackground(
     return buffer;
   } catch (error) {
     console.error('Error removing background:', error);
-    throw new Error('Failed to remove background');
+    if (error instanceof Error && error.message.includes('timeout')) {
+      throw new Error('Background removal timed out - please try again');
+    }
+    throw new Error(`Failed to remove background: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
